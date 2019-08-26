@@ -152,6 +152,95 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-Spring拦截器判断用户是否为管理员" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="如何用Spring拦截器判断用户登入是否为管理员"><a href="#如何用Spring拦截器判断用户登入是否为管理员" class="headerlink" title="如何用Spring拦截器判断用户登入是否为管理员"></a>如何用Spring拦截器判断用户登入是否为管理员</h1><p>首先时是数据库的设计：</p>
+<pre><code>CREATE table tb_user(  
+    uId int(11) primary key auto_increment,
+    uName varchar(20) not null,
+    uPassword varchar(20) not null,
+    uPhone varchar(30) not null,
+    uAddress VARCHAR(100) not null,
+    isManager int(1) default &apos;0&apos; -- 1:为管理员  0：不为管理员
+)；</code></pre><p>我们需要一个字段来判断用户是否为管理员，当数据库设计玩成后就是我们的代码了<br>   首先创建一个类，在类中定义一个根据用户名查询数据的方法</p>
+<pre><code>/**
+ * 根据用户名查询数据库信息
+ */
+@RequestMapping(&quot;selectUser&quot;)
+public String user(Map map,String uName,String uPassword) {
+
+    User user = userService.findUserByName(uName);
+    map.put(&quot;user&quot;, user);
+    //全查
+    List&lt;Student&gt; liStudents = studentService.liStudents();
+    map.put(&quot;liStudents&quot;, liStudents);
+    return &quot;user/userList&quot;;    
+}</code></pre><p>   其次我们要先定义一个自己的拦截器：其中<strong>preHandle方法</strong>是在进入你的方法名之前进行拦截，我们可以在里面处理提交乱码问题 ，它默认的返回值为<strong>fales</strong>，我们需要把他改为 <strong>true</strong><br><strong>postHandle方法</strong>是在返回页面之前执行的方法，在这里写我们的主要逻辑</p>
+<pre><code>public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
+    ModelAndView view) throws Exception {  
+    //创建map对象  
+        Map&lt;String, Object&gt; map = view.getModel();  
+    //接收map中user的值  
+        User user = (User) map.get(&quot;user&quot;);  
+    //判断IsManager是否为：1 ，如果时跳转到管理员界面 ，不是回到UserController.java中的selectUser方法中  
+    if (user.getIsManager()==1) {  
+        //跳转到管理员界面view.setViewName（&quot;要跳转的页面&quot;)  
+            view.setViewName(&quot;manager/userList&quot;);
+    }    
+}</code></pre><p>最后我们需要在Spring.xml中定义一个拦截器：</p>
+<pre><code>&lt;!-- 配置springMVC拦截器 --&gt;
+    &lt;mvc:interceptors&gt;
+        &lt;mvc:interceptor&gt;
+            &lt;!--拦截登入请求  --&gt;
+            &lt;mvc:mapping path=&quot;/user/selectUser&quot;/&gt;
+            &lt;bean class=&quot;com.hp.interceptor.LoginInter（你要进那个拦截器  包名+类名）&quot;&gt;&lt;/bean&gt;
+        &lt;/mvc:interceptor&gt;
+    &lt;/mvc:interceptors&gt; </code></pre><p>其中&lt;mvc:mapping path=”写的是你要拦截的方法名”/&gt;<br><bean class></bean><br><strong>这样就成功了！！！</strong><br>2019/8/26 19:32:36 </p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2019/08/26/Spring拦截器判断用户是否为管理员/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-我的第一篇博客文章" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
